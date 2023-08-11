@@ -1,6 +1,6 @@
 import { produce } from "immer";
 import { create } from "zustand";
-import { devtools, persist } from "zustand/middleware";
+import { devtools, persist, subscribeWithSelector } from "zustand/middleware";
 
 const store = (set) => ({
   tasks: [],
@@ -44,14 +44,18 @@ const logger = (config) => (set, get, api) =>
   );
 
 export const useStore = create(
-  logger(persist(devtools(store), { name: 'kanban-store' }))
+  subscribeWithSelector(
+    logger(persist(devtools(store), { name: 'kanban-store' }))
+  )
 );
 
 // subscribe to store changes
-useStore.subscribe((newStore, prevStore) => {
-  if (newStore.tasks !== prevStore.tasks) {
-    useStore.setState({
-      tasksInOngoing: newStore.tasks.filter((task) => task.state === 'ONGOING').length,
-    });
-  }
-});
+useStore.subscribe(
+  (store) => store.tasks,
+  (newTasks, prevTasks) => {
+    if (newTasks !== prevTasks) {
+      useStore.setState({
+        tasksInOngoing: newTasks.filter((task) => task.state === 'ONGOING').length,
+      });
+    }
+  });
