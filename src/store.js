@@ -23,4 +23,20 @@ const store = (set) => ({
     }))
 });
 
-export const useStore = create(persist(devtools(store), { name: 'kanban-store' }));
+// custom logger middleware
+const logger = (config) => (set, get, api) =>
+  config(
+    (...args) => {
+      const current = get();
+      if (!current) {
+        // get state from external source - useful for SSR
+      }
+
+      console.log("  applying", args);
+      set(...args);
+    },
+    get,
+    api
+  );
+
+export const useStore = create(logger(persist(devtools(store), { name: 'kanban-store' })));
