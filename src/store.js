@@ -1,3 +1,4 @@
+import { produce } from "immer";
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
 
@@ -6,7 +7,10 @@ const store = (set) => ({
   draggedTask: null,
   addTask: (title, state) =>
     set(
-      (store) => ({ tasks: [...store.tasks, { title, state }] }),
+      produce((store) => {
+        store.tasks.push({ title, state });
+      }),
+      // (store) => ({ tasks: [...store.tasks, { title, state }] }),
       false,
       'addTask'
     ),
@@ -39,4 +43,15 @@ const logger = (config) => (set, get, api) =>
     api
   );
 
-export const useStore = create(logger(persist(devtools(store), { name: 'kanban-store' })));
+export const useStore = create(
+  logger(persist(devtools(store), { name: 'kanban-store' }))
+);
+
+// subscribe to store changes
+useStore.subscribe((newStore, prevStore) => {
+  if (newStore.tasks !== prevStore.tasks) {
+    useStore.setState({
+      tasksInOngoing: newStore.tasks.filter((task) => task.state === 'ONGOING').length,
+    });
+  }
+});
