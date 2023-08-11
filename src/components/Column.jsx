@@ -1,5 +1,5 @@
 import "./Column.css";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useStore } from "../store";
 import { shallow } from "zustand/shallow";
 import Task from "./Task";
@@ -69,3 +69,17 @@ export default function Column ({ state }) {
     </div>
   )
 }
+
+// store state in refs if we dont want to rerender the component when state changes
+// function RefTest() {
+//   const ref = useRef();
+
+//   useEffect(() => {
+//     useStore.subscribe((store) =>
+//       store.tasks,
+//       (tasks) => {ref.current = tasks},
+//     );
+//   }, []);
+
+//   return ref.current;
+// }
